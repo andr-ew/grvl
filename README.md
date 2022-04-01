@@ -1,5 +1,5 @@
-# ndls
+# gravl
 
-endless and/or noodles
+data pavement
 
-![documentation image](doc/ndls.png)
+![documentation image](doc/gravl.png)
