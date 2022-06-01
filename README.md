@@ -2,7 +2,7 @@
 
 dual data pavement
 
-minimal reduction of ndls using with low-fidelity artifacting. spititual successor to anaphora.
+minimal reduction of ndls with low-fidelity artifacting. spititual successor to anaphora.
 
 ## grid
 
