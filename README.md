@@ -2,8 +2,6 @@
 
 dual mono data pavement
 
-# docs
-
 ## grid
 
 ![documentation image](doc/gravl.png)
@@ -16,7 +14,7 @@ dual mono data pavement
 - **K2:** randomize start
 - **K3:** randomize length
 
-# notes
+## notes
 
 crow + arc
 - crow
