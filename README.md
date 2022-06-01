@@ -2,6 +2,8 @@
 
 dual data pavement
 
+minimal reduction of ndls using with low-fidelity artifacting. spititual successor to anaphora.
+
 ## grid
 
 ![documentation image](doc/gravl.png)
