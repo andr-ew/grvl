@@ -1,6 +1,6 @@
 # gravl
 
-dual mono data pavement
+dual data pavement
 
 ## grid
 
