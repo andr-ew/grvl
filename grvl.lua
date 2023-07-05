@@ -40,9 +40,10 @@ function App.norns()
 
     return function()
         _text{ x = x[1], y = y[1], text = 'grvl' }
-        _text{ x = x[1], y = y[1] + 12, text = 'norns screen forthcoming' }
-        _text{ x = x[1], y = y[1] + 24, text = 'have fun in the params menu' }
-        _text{ x = x[1], y = y[1] + 36, text = 'and on the grid' }
+        _text{ x = x[1], y = y[1] + 11*1, text = 'norns screen forthcoming' }
+        _text{ x = x[1], y = y[1] + 11*2, text = 'arc also forthcoming' }
+        _text{ x = x[1], y = y[1] + 11*3, text = 'have fun in the params menu' }
+        _text{ x = x[1], y = y[1] + 11*4, text = 'and on the grid' }
     end
 end
 
