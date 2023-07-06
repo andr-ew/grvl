@@ -17,10 +17,16 @@ Grid = include 'lib/crops/components/grid'
 Screen = include 'lib/crops/components/screen'
 Arc = include 'lib/crops/components/arc'
 
+pattern_time = include 'lib/pattern_time_extended/pattern_time_extended'
+
+Produce = {}
+Produce.grid = include 'lib/produce/grid'
+
 g = grid.connect()
 
 engine.name = 'Grvl'
 
+include 'lib/lib-grvl/globals'
 include 'lib/lib-grvl/params'
 
 local App = {}
