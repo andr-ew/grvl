@@ -1,6 +1,6 @@
 # grvl
 
-dual data pavement. no de-clicking, no interpolation, variable sample rate, bit depth, audio rate sample PM & filter FM.
+dual data pavement.
 
 a spiritual successor to [anaphora](https://github.com/andr-ew/prosody#anaphora).
 
