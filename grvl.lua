@@ -2,7 +2,7 @@
 --
 -- dual data pavement
 --
--- version 0.1.0-beta @andrew
+-- version 0.1.2-beta @andrew
 --
 -- recommended: grid 
 -- (128, 64, or midigrid)
