@@ -10,7 +10,16 @@
 -- documentation:
 -- github.com/andr-ew/lib-grvl
 
+--device globals (edit for midigrid if needed)
+
+g = grid.connect()
+
+--system libs
+
 cs = require 'controlspec'
+lfos = require 'lfo'
+
+--git submodule libs
 
 include 'lib/crops/core'
 Grid = include 'lib/crops/components/grid'
@@ -22,12 +31,18 @@ pattern_time = include 'lib/pattern_time_extended/pattern_time_extended'
 Produce = {}
 Produce.grid = include 'lib/produce/grid'
 
-g = grid.connect()
+patcher = include 'lib/patcher/patcher'
+Patcher = include 'lib/patcher/ui'
+
+--script files
 
 engine.name = 'Grvl'
 
 include 'lib/lib-grvl/globals'
+mod_src = include 'lib/modulation-sources'
 include 'lib/lib-grvl/params'
+
+--create, connect UI components
 
 local App = {}
 App.grid = include 'lib/lib-grvl/ui/grid'
@@ -61,6 +76,14 @@ local _app = {
 crops.connect_grid(_app.grid, g)
 crops.connect_screen(_app.norns)
 
+--init/cleanup
+
 function init()
+    mod_src.lfos.reset_params()
+
+    -- params:read()
+    
+    for i = 1,2 do mod_src.lfos[i]:start() end
+
     params:bang()
 end
