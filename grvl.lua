@@ -73,6 +73,10 @@ function App.norns()
         else
             grvl.active_src = 'none'
         end
+
+        crops.dirty.screen = true
+        crops.dirty.grid = true
+        crops.dirty.arc = true
     end
     local _active_src = Key.momentaries()
 

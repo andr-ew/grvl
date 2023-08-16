@@ -26,7 +26,7 @@ do
         end
         
         for i, map in ipairs(mapped) do if map then
-            crow.input[i].mode('stream', 0.002)
+            crow.input[i].mode('stream', 0.01)
             crow.input[i].stream = function(v)
                 patcher.set_source('crow in '..i, v)
             end
