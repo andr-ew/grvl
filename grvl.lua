@@ -22,8 +22,10 @@ lfos = require 'lfo'
 --git submodule libs
 
 include 'lib/crops/core'
-Grid = include 'lib/crops/components/grid'
+Key = include 'lib/crops/components/key'
+Enc = include 'lib/crops/components/enc'
 Screen = include 'lib/crops/components/screen'
+Grid = include 'lib/crops/components/grid'
 Arc = include 'lib/crops/components/arc'
 
 pattern_time = include 'lib/pattern_time_extended/pattern_time_extended'
@@ -41,6 +43,7 @@ engine.name = 'Grvl'
 include 'lib/lib-grvl/globals'
 mod_src = include 'lib/modulation-sources'
 include 'lib/lib-grvl/params'
+include 'lib/params'
 
 --create, connect UI components
 
@@ -58,6 +61,20 @@ end
 
 function App.norns()
     local _text = Screen.text()
+    
+    local src_held = { 0, 0 }
+    local function set_active_src(v)
+        src_held = v
+
+        if src_held[1] > 0 then
+            grvl.active_src = patcher.sources[params:get('patcher_source_'..1)]
+        elseif src_held[2] > 0 then
+            grvl.active_src = patcher.sources[params:get('patcher_source_'..2)]
+        else
+            grvl.active_src = 'none'
+        end
+    end
+    local _active_src = Key.momentaries()
 
     return function()
         _text{ x = x[1], y = y[1], text = 'grvl' }
@@ -65,6 +82,11 @@ function App.norns()
         _text{ x = x[1], y = y[1] + 11*2, text = 'arc also forthcoming' }
         _text{ x = x[1], y = y[1] + 11*3, text = 'have fun in the params menu' }
         _text{ x = x[1], y = y[1] + 11*4, text = 'and on the grid' }
+
+        _active_src{
+            n = { 2, 3 },
+            state = crops.of_variable(src_held, set_active_src)
+        }
     end
 end
 
@@ -75,6 +97,8 @@ local _app = {
 
 crops.connect_grid(_app.grid, g)
 crops.connect_screen(_app.norns)
+crops.connect_key(_app.norns)
+crops.connect_enc(_app.norns)
 
 --init/cleanup
 

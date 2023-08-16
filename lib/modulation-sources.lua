@@ -58,7 +58,7 @@ do
     src.lfos.reset_params = function()
         for i = 1,2 do
             params:set('lfo_mode_lfo_'..i, 2)
-            params:set('lfo_max_lfo_'..i, 0.5)
+            params:set('lfo_max_lfo_'..i, 5)
             params:set('lfo_lfo_'..i, 2)
         end
     end
