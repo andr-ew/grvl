@@ -40,7 +40,10 @@ Patcher = include 'lib/patcher/ui'
 
 engine.name = 'Grvl'
 
+grvl = {}
 include 'lib/lib-grvl/globals'
+include 'lib/globals'
+
 mod_src = include 'lib/modulation-sources'
 include 'lib/lib-grvl/params'
 include 'lib/params'
@@ -113,5 +116,10 @@ function init()
     
     for i = 1,2 do mod_src.lfos[i]:start() end
 
+    grvl.start_polls()
     params:bang()
+end
+
+function cleanup()
+    poll.clear_all()
 end
