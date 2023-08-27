@@ -2,7 +2,7 @@
 --
 -- dual data pavement
 --
--- version 0.1.2-beta @andrew
+-- version 0.2.0-beta @andrew
 --
 -- recommended: grid 
 -- (128, 64, or midigrid)
@@ -13,6 +13,9 @@
 --device globals (edit for midigrid if needed)
 
 g = grid.connect()
+a = arc.connect()
+
+arc2 = a and a.device and string.match(a.device.name, 'arc 2')
 
 --system libs
 
@@ -47,11 +50,13 @@ include 'lib/globals'
 mod_src = include 'lib/modulation-sources'
 include 'lib/lib-grvl/params'
 include 'lib/params'
+Components = include 'lib/lib-grvl/ui/components'
 
 --create, connect UI components
 
 local App = {}
 App.grid = include 'lib/lib-grvl/ui/grid'
+App.arc = include 'lib/lib-grvl/ui/arc'
 
 local x, y
 do
@@ -65,23 +70,23 @@ end
 function App.norns()
     local _text = Screen.text()
     
-    local src_held = { 0, 0 }
-    local function set_active_src(v)
-        src_held = v
+    -- local src_held = { 0, 0 }
+    -- local function set_active_src(v)
+    --     src_held = v
 
-        if src_held[1] > 0 then
-            grvl.active_src = patcher.sources[params:get('patcher_source_'..1)]
-        elseif src_held[2] > 0 then
-            grvl.active_src = patcher.sources[params:get('patcher_source_'..2)]
-        else
-            grvl.active_src = 'none'
-        end
+    --     if src_held[1] > 0 then
+    --         grvl.active_src = patcher.sources[params:get('patcher_source_'..1)]
+    --     elseif src_held[2] > 0 then
+    --         grvl.active_src = patcher.sources[params:get('patcher_source_'..2)]
+    --     else
+    --         grvl.active_src = 'none'
+    --     end
 
-        crops.dirty.screen = true
-        crops.dirty.grid = true
-        crops.dirty.arc = true
-    end
-    local _active_src = Key.momentaries()
+    --     crops.dirty.screen = true
+    --     crops.dirty.grid = true
+    --     crops.dirty.arc = true
+    -- end
+    -- local _active_src = Key.momentaries()
 
     return function()
         _text{ x = x[1], y = y[1], text = 'grvl' }
@@ -90,19 +95,30 @@ function App.norns()
         _text{ x = x[1], y = y[1] + 11*3, text = 'have fun in the params menu' }
         _text{ x = x[1], y = y[1] + 11*4, text = 'and on the grid' }
 
-        _active_src{
-            n = { 2, 3 },
-            state = crops.of_variable(src_held, set_active_src)
-        }
+        -- _active_src{
+        --     n = { 2, 3 },
+        --     state = crops.of_variable(src_held, set_active_src)
+        -- }
     end
 end
 
 local _app = {
     grid = App.grid(),
-    norns = App.norns()
+    arc = App.arc{ 
+        map = { 
+            { 'level_',      'old_',      'level_',      'old_'      },
+            { 'pm_freq_',    'pm_depth_', 'pm_freq_',    'pm_depth_' },
+            { 'loop_start_', 'loop_end_', 'loop_start_', 'loop_end_' },
+            { 'loop_end_',   'rate_',     'loop_end_',   'rate_'     }
+        }, 
+        rotated = arc2,
+        grid_wide = wide,
+    },
+    norns = App.norns(),
 }
 
 crops.connect_grid(_app.grid, g)
+crops.connect_arc(_app.arc, a, 90)
 crops.connect_screen(_app.norns)
 crops.connect_key(_app.norns)
 crops.connect_enc(_app.norns)

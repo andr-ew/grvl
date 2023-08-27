@@ -15,6 +15,13 @@ do
             default = tab.key(patcher.sources, 'crow in '..i)
         }
     end
+    for i = 3,4 do
+        params:add{
+            id = 'patcher_source_'..i, name = 'source '..i,
+            type = 'option', options = patcher.sources,
+            default = tab.key(patcher.sources, 'lfo '..(i-2))
+        }
+    end
 
     local function action(dest, v)
         mod_src.crow.update()
