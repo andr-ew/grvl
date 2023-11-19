@@ -55,6 +55,49 @@ local function Destination(args)
     end
 end
 
+local function Gfx()
+    local data = {}
+    for i = 1,128 do
+        data[i] = 0
+    end
+    local idx_last = 0
+    local idx = 0
+    local val = 8
+
+    return function(props)
+        if crops.mode == 'redraw' and crops.device == 'screen' then 
+            local d = patcher.get_destination_plus_param('detritus_'..props.chan)
+            for ix,_ in ipairs(data) do
+                for iy = 1,4 do
+                    screen.level(data[(ix - 1 + (d - 1)*32*(iy))%#data + 1])
+                    screen.move(ix, 32*(props.chan - 1) + 8*(iy - 1))
+                    screen.line_rel(0, 8)
+                    screen.stroke()
+                end
+            end
+
+            local buf = patcher.get_destination_plus_param('buffer_'..props.chan)
+            if 
+                buffers[buf].recorded 
+                or buffers[buf].manual 
+                or buffers[buf].loaded
+            then
+                local r = grvl.get_rate_w(props.chan)
+                --mutating states in the render loop -- shhh! don't tell anyone
+            
+                idx_last = idx
+                idx = (idx - 1 + r)%#data + 1
+
+                data[idx//1] = val 
+
+                if (r > 0 and idx < idx_last) or (r < 0 and idx > idx_last) then
+                    val = (val + 11) % 15
+                end
+            end
+        end
+    end
+end
+
 local function App(args)
     local map = args.map
 
@@ -72,91 +115,114 @@ local function App(args)
         end
     end
 
+    local EDIT, ERODE = 0, 1
+    local view = 0
+    local _view = Key.toggle()
+
+    local _gfxs = {}
+    for chan = 1,2 do
+        _gfxs[chan] = Gfx()
+    end
+
     return function()
-        _focus{
-            n = 1, max = 8, sensitivity = 1/4,
-            state = crops.of_variable(grvl.norns_focus, function(v) 
-                grvl.norns_focus = v
-                crops.dirty.screen = true 
+        _view{
+            n = 1, state = crops.of_variable(view, function(v) 
+                view = v
+                crops.dirty.screen = true
             end)
         }
 
-        local f_y = (grvl.norns_focus - 1)%4 + 1
-        local f_x = (grvl.norns_focus - 1)//4 + 1
+        if view == EDIT then
+            _focus{
+                n = 1, max = 8, sensitivity = 1/4,
+                state = crops.of_variable(grvl.norns_focus, function(v) 
+                    grvl.norns_focus = v
+                    crops.dirty.screen = true 
+                end)
+            }
 
-        if crops.mode == 'redraw' then 
+            local f_y = (grvl.norns_focus - 1)%4 + 1
+            local f_x = (grvl.norns_focus - 1)//4 + 1
 
-            -- focus rectangles
-            screen.level(15)
-            for i = 1,2 do
-                screen.rect(
-                    x[i + (f_x - 1)*2] - 1,
-                    y[1] + text_mul_y*(f_y - 1) + 2,
-                    w/4 - 2,
-                    8 
-                )
-                screen.fill()
-            end 
-
-            --phase
-            for chan = 1,2 do
-                local left, top = x[(chan - 1)*2 + 1], y[1] + text_mul_y*5.5 + 2
-                local width = w/2 - 2
-
-                -- screen.level(4)
-                -- screen.move(left, top)
-                -- screen.line_rel(width, 0)
-                -- screen.stroke()
-
-                local st = (
-                    patcher.get_destination_plus_param('loop_start_'..chan)
-                    / grvl.time_volt_scale
-                )
-                local en = (
-                    patcher.get_destination_plus_param('loop_end_'..chan) 
-                    / grvl.time_volt_scale
-                )
-                local min = math.min(st, en)
-                local max = math.max(st, en)
-
-                screen.level(6)
-                screen.move(left + min*width, top)
-                screen.line(left + max*width, top)
-                screen.stroke()
-                screen.level(10)
-                screen.pixel(left + min*width, top)
-                screen.pixel(left + max*width, top)
-                screen.fill()
-
-                local buf = patcher.get_destination_plus_param('buffer_'..chan)
-                if 
-                    buffers[buf].recorded 
-                    or buffers[buf].manual 
-                    or buffers[buf].loaded
-                then
-                    local ph = buffers[buf].phase_seconds
-                    local dur = buffers[buf].duration_seconds
-
-                    screen.level(15)
-                    screen.pixel(left + (ph / dur)*width, top)
+            if crops.mode == 'redraw' and crops.device == 'screen' then 
+                -- focus rectangles
+                screen.level(15)
+                for i = 1,2 do
+                    screen.rect(
+                        x[i + (f_x - 1)*2] - 1,
+                        y[1] + text_mul_y*(f_y - 1) + 2,
+                        w/4 - 2,
+                        8 
+                    )
                     screen.fill()
+                end 
+
+                --phase
+                for chan = 1,2 do
+                    local left, top = x[(chan - 1)*2 + 1], y[1] + text_mul_y*5.5 + 2
+                    local width = w/2 - 2
+
+                    -- screen.level(4)
+                    -- screen.move(left, top)
+                    -- screen.line_rel(width, 0)
+                    -- screen.stroke()
+
+                    local st = (
+                        patcher.get_destination_plus_param('loop_start_'..chan)
+                        / grvl.time_volt_scale
+                    )
+                    local en = (
+                        patcher.get_destination_plus_param('loop_end_'..chan) 
+                        / grvl.time_volt_scale
+                    )
+                    local min = math.min(st, en)
+                    local max = math.max(st, en)
+
+                    screen.level(6)
+                    screen.move(left + min*width, top)
+                    screen.line(left + max*width, top)
+                    screen.stroke()
+                    screen.level(10)
+                    screen.pixel(left + min*width, top)
+                    screen.pixel(left + max*width, top)
+                    screen.fill()
+
+                    local buf = patcher.get_destination_plus_param('buffer_'..chan)
+                    if 
+                        buffers[buf].recorded 
+                        or buffers[buf].manual 
+                        or buffers[buf].loaded
+                    then
+                        local ph = buffers[buf].phase_seconds
+                        local dur = buffers[buf].duration_seconds
+
+                        screen.level(15)
+                        screen.pixel(left + (ph / dur)*width, top)
+                        screen.fill()
+                    end
                 end
             end
+
+            --TODO: rec/clear
+
+            for y = 1,4 do for x = 1,4 do
+                local chan = (x <3) and 1 or 2
+
+                _map[y][x](map[y][x]..chan, grvl.active_src, {
+                    focused = (y == f_y and chan == f_x),
+                    map_x = x,
+                    map_y = y,
+                    levels = { 4, 15 },
+                    levels_label = (
+                        arc_connected and grvl.arc_focus[y][x] > 0
+                    ) and { 10, 0 } or { 4, 0 },
+                })
+            end end
+        elseif view == ERODE then
+            for chan,_gfx in ipairs(_gfxs) do
+                _gfx{ chan = chan }
+            end
         end
-
-        for y = 1,4 do for x = 1,4 do
-            local chan = (x <3) and 1 or 2
-
-            _map[y][x](map[y][x]..chan, grvl.active_src, {
-                focused = (y == f_y and chan == f_x),
-                map_x = x,
-                map_y = y,
-                levels = { 4, 15 },
-                levels_label = (
-                    arc_connected and grvl.arc_focus[y][x] > 0
-                ) and { 10, 0 } or { 4, 0 },
-            })
-        end end
     end
 end
 
