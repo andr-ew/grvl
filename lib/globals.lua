@@ -8,7 +8,7 @@ function grvl.start_polls()
             if (params:get('play_1') > 0) or (params:get('play_2') > 0) then
                 crops.dirty.grid = true
                 crops.dirty.arc = true
-                -- crops.dirty.screen = true --?
+                crops.dirty.screen = true
             end
         end)
 

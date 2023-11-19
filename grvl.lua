@@ -125,7 +125,7 @@ local _app = {
 
 crops.connect_grid(_app.grid, g)
 crops.connect_arc(_app.arc, a, 90)
-crops.connect_screen(_app.norns)
+crops.connect_screen(_app.norns, 15)
 crops.connect_key(_app.norns)
 crops.connect_enc(_app.norns)
 
