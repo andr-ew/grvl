@@ -2,12 +2,12 @@ local buffers = grvl.buffers
 
 local x, y, w, h
 do
-    local mar = { top = 0, bottom = 0, left = 2, right = 0 }
+    local mar = { top = 0, bottom = 0, left = 1, right = 0 }
     local top, bottom = mar.top, 64 - mar.bottom
     local left, right = mar.left, 128-mar.right
     w = 128 - mar.left - mar.right
     h = 64 - mar.top - mar.bottom
-    x = { left, left + w*(1/4), 64, left + w*(3/4)  }
+    x = { left, left + w*(1/4), 64, left + w*(3/4), right }
     y = { top, }
 end
 local text_mul_y = 9
@@ -23,7 +23,7 @@ local function Destination(args)
     local _enc = Enc.control() --TODO: select component by param type (p.t)
 
     return function(props)
-        local x = x[props.map_x] + (props.map_x >2 and (w/4 - 5) or 0)
+        local x = x[props.map_x] + (props.map_x >2 and (w/4 - 1) or 0)
         local flow = props.map_x >2 and 'left' or 'right'
 
         _label{
@@ -90,7 +90,7 @@ local function Gfx()
 
                 data[idx//1] = val 
 
-                if (r > 0 and idx < idx_last) or (r < 0 and idx > idx_last) then
+                if (r>0 and idx<idx_last) or (r<0 and idx>idx_last) then
                     val = (val + 11) % 15
                 end
             end
@@ -102,6 +102,8 @@ local function App(args)
     local map = args.map
 
     local _focus = Enc.integer()
+    
+    local _recs = { Components.norns.toggle_hold(), Components.norns.toggle_hold() }
 
     local _map = {}
     for y = 1,4 do
@@ -119,10 +121,7 @@ local function App(args)
     local view = 0
     local _view = Key.toggle()
 
-    local _gfxs = {}
-    for chan = 1,2 do
-        _gfxs[chan] = Gfx()
-    end
+    local _gfxs = { Gfx(), Gfx() }
 
     return function()
         _view{
@@ -148,8 +147,9 @@ local function App(args)
                 -- focus rectangles
                 screen.level(15)
                 for i = 1,2 do
+                    local off = f_x==1 and -1 or 2
                     screen.rect(
-                        x[i + (f_x - 1)*2] - 1,
+                        x[i + (f_x - 1)*2] + off,
                         y[1] + text_mul_y*(f_y - 1) + 2,
                         w/4 - 2,
                         8 
@@ -159,8 +159,13 @@ local function App(args)
 
                 --phase
                 for chan = 1,2 do
-                    local left, top = x[(chan - 1)*2 + 1], y[1] + text_mul_y*5.5 + 2
-                    local width = w/2 - 2
+                    local left= x[(chan - 1)*2 + 1]
+                    local top = y[1] + text_mul_y*5.5 + 2
+                    local width = w/2 - 4
+                    
+                    if chan==2 then
+                        left = left + 3
+                    end
 
                     -- screen.level(4)
                     -- screen.move(left, top)
@@ -203,7 +208,18 @@ local function App(args)
                 end
             end
 
-            --TODO: rec/clear
+            for chan,_rec in ipairs(_recs) do
+                _rec{
+                    x = chan==1 and x[1]+0 or x[5]-1,
+                    y = y[1] + text_mul_y*7 - 1,
+                    n = chan + 1, 
+                    id_toggle = 'record_'..chan, id_hold = 'clear_'..chan, 
+                    label_toggle = 'REC', label_hold = 'CLEAR',
+                    levels = { 4, 15 },
+                    font_face = 2,
+                    flow = chan==2 and 'left' or 'right',
+                }
+            end
 
             for y = 1,4 do for x = 1,4 do
                 local chan = (x <3) and 1 or 2
