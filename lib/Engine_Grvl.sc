@@ -12,8 +12,9 @@ Engine_Grvl : CroneEngine {
         grvl.commands.keysValuesDo({ arg name, command;
             this.addCommand(name, command.at('format'), command.at('oscFunc'));
         });
-
-        //TODO: add polls
+        grvl.polls.keysValuesDo({ arg name, poll;
+            this.addPoll(name, poll.at('func'));
+        });
     }
 
     free {
