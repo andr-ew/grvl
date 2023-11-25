@@ -18,7 +18,7 @@ a spiritual successor to [anaphora](https://github.com/andr-ew/prosody#anaphora)
 
 - [grid](https://monome.org/docs/grid/) (128 or 64)
 - arc (2 or 4 rings)
-- [crow](https://monome.org/docs/crow/) (planned)
+- [crow](https://monome.org/docs/crow/)
 - midi mapping
 
 ## install
