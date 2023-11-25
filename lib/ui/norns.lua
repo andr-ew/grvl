@@ -19,8 +19,10 @@ local function Destination(args)
     local name = p.name
 
     local _label = Screen.text()
-    local _value = Screen.text()
-    local _enc = Enc.control() --TODO: select component by param type (p.t)
+    local _value = Patcher.screen.destination(Screen.text())
+
+    --TODO: select component by param type (p.t)
+    local _enc = Patcher.enc.destination(Enc.control()) 
 
     return function(props)
         local x = x[props.map_x] + (props.map_x >2 and (w/4 - 1) or 0)
@@ -37,20 +39,24 @@ local function Destination(args)
             -- flow = 'center',
         }
         if props.focused then
-            _value{
+            _value(id, grvl.active_src, {
                 x = x,
                 y = y[1] + text_mul_y*5 + 1,
                 -- text = util.round(params:get(id), 0.01),
-                text = string.format('%.2f %s', params:get(id), spec.units),
+                text = string.format(
+                    '%.2f %s', 
+                    patcher.get_destination_plus_param(id),
+                    spec.units
+                ),
                 level = props.levels[2],
                 font_face = 2,
                 flow = flow,
-            }
-            _enc{
+            })
+            _enc(id, grvl.active_src, {
                 n = (props.map_x - 1)%2 + 2,
                 controlspec = spec,
-                state = crops.of_param(id),
-            }
+                state = grvl.of_param(id),
+            })
         end
     end
 end
@@ -103,7 +109,10 @@ local function App(args)
 
     local _focus = Enc.integer()
     
-    local _recs = { Components.norns.toggle_hold(), Components.norns.toggle_hold() }
+    local _recs = {}
+    for chan = 1,2 do
+        _recs[chan] = Patcher.key_screen.destination(Components.norns.toggle_hold())
+    end
 
     local _map = {}
     for y = 1,4 do
@@ -112,7 +121,7 @@ local function App(args)
             if map[y][x] then
                 local prefix = map[y][x]
                 local chan = (x <3) and 1 or 2
-                _map[y][x] = Patcher.enc.destination(Destination{ id = prefix..chan })
+                _map[y][x] = Destination{ id = prefix..chan }
             end
         end
     end
@@ -209,22 +218,25 @@ local function App(args)
             end
 
             for chan,_rec in ipairs(_recs) do
-                _rec{
+                _rec('record_'..chan, grvl.active_src, {
                     x = chan==1 and x[1]+0 or x[5]-1,
                     y = y[1] + text_mul_y*7 - 1,
                     n = chan + 1, 
-                    id_toggle = 'record_'..chan, id_hold = 'clear_'..chan, 
+                    -- id_toggle = 'record_'..chan, 
+                    -- id_hold = 'clear_'..chan, 
+                    state_toggle = grvl.of_param('record_'..chan),
+                    action_hold = function() params:delta('clear_'..chan) end,
                     label_toggle = 'REC', label_hold = 'CLEAR',
                     levels = { 4, 15 },
                     font_face = 2,
                     flow = chan==2 and 'left' or 'right',
-                }
+                })
             end
 
             for y = 1,4 do for x = 1,4 do
                 local chan = (x <3) and 1 or 2
 
-                _map[y][x](map[y][x]..chan, grvl.active_src, {
+                _map[y][x]{
                     focused = (y == f_y and chan == f_x),
                     map_x = x,
                     map_y = y,
@@ -232,7 +244,7 @@ local function App(args)
                     levels_label = (
                         arc_connected and grvl.arc_focus[y][x] > 0
                     ) and { 10, 0 } or { 4, 0 },
-                })
+                }
             end end
         elseif view == ERODE then
             for chan,_gfx in ipairs(_gfxs) do
